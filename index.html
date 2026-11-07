@@ -460,20 +460,249 @@ font-size: var(--text-14);
 button, button.ghost, button.primary, button.secondary, .ghost, a.ghost, input[type="text"], .disclosure summary { min-height: var(--touch); }
 .row { gap: var(--space-2); }
 }
+:root {
+--phi: 1.618;
+--g-1: 0.3125rem;
+--g-2: 0.5rem;
+--g-3: 0.8125rem;
+--g-4: 1.3125rem;
+--g-5: 2.125rem;
+--g-6: 3.4375rem;
+--g-7: 5.5625rem;
+--g-8: 9rem;
+--gt-s: 0.875rem;
+--gt-b: 1rem;
+--gt-m: 1.625rem;
+--gt-l: 2.625rem;
+--gt-xl: 4.25rem;
+--bar-w: 38.125rem;
+--bar-h: 3.4375rem;
+--col: min(100% - 2 * var(--g-4), var(--bar-w));
+--bar-ground: var(--card);
+}
+.dark { --bar-ground: var(--muted); }
 #engine { display: none; }
-#app-page:not([hidden]) + #home-card { display: none; }
-#app-page[hidden] { display: none; }
-.lede:empty { display: none; }
-.answer .q { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--space-1) var(--space-3); margin: 0 0 var(--space-1); color: var(--muted-foreground); font-family: var(--font-mono); font-size: var(--text-14); overflow-wrap: anywhere; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+body { display: flex; flex-direction: column; min-height: 100dvh; line-height: var(--phi); }
+main {
+flex: 1 0 auto;
+width: 100%;
+margin: 0;
+padding: 0;
+display: grid;
+grid-template-columns: minmax(0, 1fr);
+grid-template-rows: minmax(var(--g-5), 1fr) auto minmax(var(--g-8), 1.618fr);
+justify-items: center;
+}
+.hero { grid-row: 2; width: var(--col); display: grid; grid-template-columns: minmax(0, 1fr); justify-items: center; }
+.below { grid-row: 3; align-self: start; width: var(--col); padding: var(--g-3) var(--g-4) var(--g-5); }
+.wordmark {
+margin: 0 0 var(--g-5);
+font-family: var(--font-display);
+font-weight: 600;
+font-size: clamp(var(--gt-l), 13vw, var(--gt-xl));
+line-height: 1;
+letter-spacing: var(--tracking-display);
+color: var(--foreground);
+user-select: none;
+}
+.search { position: relative; width: 100%; height: var(--bar-h); }
+.surface {
+position: absolute;
+z-index: 2;
+top: 0;
+left: 0;
+right: 0;
+border-radius: calc(var(--bar-h) / 2);
+background: var(--bar-ground);
+color: var(--foreground);
+transition: box-shadow var(--duration) var(--ease);
+}
+.search:has(#suggest:not([hidden])) .surface { border-radius: calc(var(--bar-h) / 2) calc(var(--bar-h) / 2) var(--g-4) var(--g-4); }
+html:not(.dark) .surface:is(:hover, :focus-within) { box-shadow: 0 1px var(--g-2) var(--shadow); }
+.surface {
+--spectrum-red: #fb5661;
+--spectrum-orange: #fa792e;
+--spectrum-amber: #f9cf24;
+--spectrum-yellow: #f6e41e;
+--spectrum-green: #25d05e;
+--spectrum-cyan: #20d0f3;
+--spectrum-blue: #4f81f8;
+--spectrum-violet: #ae6ff6;
+--spectrum-pink: #f368c5;
+--spectrum: linear-gradient(100deg,
+var(--spectrum-red) 0%, var(--spectrum-orange) 7%, var(--spectrum-amber) 14%, var(--spectrum-yellow) 19%,
+var(--spectrum-green) 25%, var(--spectrum-cyan) 31%, var(--spectrum-blue) 38%, var(--spectrum-violet) 45%,
+var(--spectrum-pink) 48%, var(--spectrum-red) 50%, var(--spectrum-orange) 57%, var(--spectrum-amber) 64%,
+var(--spectrum-yellow) 69%, var(--spectrum-green) 75%, var(--spectrum-cyan) 81%, var(--spectrum-blue) 88%,
+var(--spectrum-violet) 95%, var(--spectrum-pink) 98%, var(--spectrum-red) 100%);
+}
+.surface::before {
+content: "";
+position: absolute;
+inset: 0;
+z-index: 1;
+padding: 1px;
+border-radius: inherit;
+background-image: var(--spectrum);
+background-size: 200% 100%;
+opacity: 0.618;
+pointer-events: none;
+animation: spectrum-drift 24s linear infinite;
+-webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+-webkit-mask-composite: xor;
+mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+transition: opacity 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.surface:is(:hover, :focus-within)::before { opacity: 0.854; }@keyframes spectrum-drift { to { background-position: 200% 0; } }
+@media (prefers-reduced-motion: reduce) { .surface::before { animation: none; } }
+.bar {
+display: flex;
+align-items: center;
+gap: var(--g-3);
+width: 100%;
+height: var(--bar-h);
+padding: 0 var(--g-2) 0 var(--g-4);
+cursor: text;
+}
+.bar .lens { flex: none; width: var(--g-4); height: var(--g-4); color: var(--muted-foreground); }
+.bar input[type="text"] {
+flex: 1 1 auto;
+min-width: 0;
+height: 100%;
+min-height: 0;
+padding: 0;
+border: 0;
+border-radius: 0;
+background: none;
+color: var(--foreground);
+caret-color: var(--foreground);
+font-family: var(--font-sans);
+font-size: var(--gt-b);
+letter-spacing: 0.005em;
+outline: none;
+}
+.bar input[type="text"]::placeholder { color: var(--muted-foreground); }
+.bar input:disabled { cursor: progress; }
+.bar .go {
+flex: none;
+display: grid;
+place-items: center;
+width: var(--g-5);
+height: var(--g-5);
+min-height: 0;
+margin-right: var(--g-1);
+padding: 0;
+border: 0;
+border-radius: 50%;
+background: transparent;
+color: var(--muted-foreground);
+}
+.bar .go:hover, .bar .go:focus-visible { background: var(--accent); color: var(--foreground); }
+.bar .go svg { width: var(--g-4); height: var(--g-4); }
+.bar .go[hidden] { display: none; }
+.suggest {
+margin: 0;
+padding: 0 0 var(--g-3);
+list-style: none;
+border-radius: 0 0 var(--g-4) var(--g-4);
+overflow: hidden;
+}
+.suggest::before { content: ""; display: block; height: var(--border-width); margin: 0 var(--g-4) var(--g-2); background: var(--border); }
+.suggest[hidden] { display: none; }
+.suggest li {
+display: grid;
+grid-template-columns: var(--g-4) minmax(0, 1fr) auto;
+align-items: center;
+gap: var(--g-3);
+min-height: var(--g-5);
+padding: 0 var(--g-4);
+cursor: pointer;
+font-size: var(--gt-b);
+}
+.suggest li svg { width: var(--g-3); height: var(--g-3); color: var(--muted-foreground); }
+.suggest li > :last-child { font-family: var(--font-mono); font-size: var(--gt-s); color: var(--muted-foreground); white-space: nowrap; }
+.suggest li[aria-selected="true"], .suggest li:hover { background: var(--accent); }
+.suggest .none { grid-template-columns: minmax(0, 1fr); color: var(--muted-foreground); cursor: default; padding-block: var(--g-2); }
+.suggest .none:hover { background: none; }
+.hint, .actions { display: none !important; }
+body:not([data-phase="open"]):not([data-phase="refused"]) .foot { display: none; }
+.answer { margin: 0; }
+.answer p { margin: 0; }
+.answer .q { display: flex; justify-content: space-between; gap: var(--g-3); font-family: var(--font-mono); font-size: var(--gt-s); color: var(--muted-foreground); }
+.answer .q span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .answer .q:has(#echo:empty):has(#cost:empty) { display: none; }
-.answer .a { margin: 0 0 var(--space-4); font-size: var(--text-16); overflow-wrap: anywhere; }
+.answer .a { font-size: var(--gt-b); overflow-wrap: anywhere; }
 .answer .a:empty { display: none; }
 .answer .a.bad { color: var(--destructive); }
-.hint { margin: 0 0 var(--space-4); }
-.status-line { display: block; margin: var(--space-2) 0 0; font-size: var(--text-14); overflow-wrap: anywhere; }
-.facts [hidden], #home-card [hidden] { display: none; }
-.facts a:not(.ghost) { color: var(--link); text-decoration: underline; text-decoration-color: var(--border-strong); text-underline-offset: 0.2em; }
-.facts a:not(.ghost):hover { color: var(--link-hover); }
+.hint { margin: 0; font-size: var(--gt-s); color: var(--muted-foreground); text-align: center; text-wrap: balance; }
+.hint code { font-size: inherit; }
+.below:has(#result:not(:empty)) .hint, .below:has(#echo:not(:empty)) .hint { display: none; }
+.actions { display: flex; justify-content: center; margin: var(--g-4) 0 0; }
+.pill {
+min-height: var(--g-5);
+padding: 0 var(--g-4);
+border-radius: calc(var(--g-5) / 2);
+border: var(--border-width) solid var(--border);
+background: var(--bar-ground);
+color: var(--foreground);
+font-family: var(--font-sans);
+font-size: var(--gt-s);
+font-weight: 500;
+}
+.pill:hover { background: var(--accent); border-color: var(--input); }
+.pill[hidden] { display: none; }
+.intro { display: none; width: var(--col); margin: 0; }
+.intro h1 { margin: 0 0 var(--g-2); font-size: var(--gt-l); line-height: 1.236; letter-spacing: -0.035em; }
+.intro .lede { margin: 0; max-width: none; font-size: var(--gt-b); color: var(--muted-foreground); text-wrap: pretty; }
+body:is([data-phase="opening"], [data-phase="refused"]) main { grid-template-rows: minmax(var(--g-5), 1fr) auto auto minmax(var(--g-8), 1.618fr); }
+body:is([data-phase="opening"], [data-phase="refused"]) .below { padding-bottom: var(--g-3); }
+body:is([data-phase="opening"], [data-phase="refused"]) .below :is(.hint, .actions) { display: none; }
+body:is([data-phase="opening"], [data-phase="refused"]) .intro { display: block; grid-row: 4; align-self: start; padding: 0 var(--g-4); }
+body:is([data-phase="opening"], [data-phase="refused"]) .intro h1 { display: none; }
+body[data-phase="open"] main { display: block; padding: var(--g-6) 0 var(--g-7); }
+body[data-phase="open"] :is(.hero, .below) { display: none; }
+body[data-phase="open"] .intro { display: block; margin: 0 auto var(--g-5); }
+#app-page { width: var(--col); margin: 0 auto; padding: var(--g-5); border-radius: var(--g-4); }
+#app-page[hidden] { display: none; }
+#app-page .status-line { margin: var(--g-4) 0 0; font-size: var(--gt-s); color: var(--muted-foreground); overflow-wrap: anywhere; }
+@media (max-width: 599px) { #app-page { padding: var(--g-4); } }
+.foot {
+display: block;
+padding: 0 0 var(--safe-bottom);
+background: var(--sidebar);
+color: var(--muted-foreground);
+border-top: var(--border-width) solid var(--sidebar-border);
+font-size: var(--gt-s);
+line-height: var(--g-4);
+}
+.foot-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--g-2) var(--g-4); padding: var(--g-3) var(--g-5); }
+.foot-row + .foot-row { border-top: var(--border-width) solid var(--sidebar-border); }
+.foot .identity .chip { min-height: var(--g-4); padding: 0 var(--g-2); font-size: var(--gt-s); line-height: 1; }
+.foot .identity .status-line { min-width: 0; margin: 0; font-size: var(--gt-s); overflow-wrap: anywhere; }
+.foot .identity .status-line[hidden] { display: none; }
+.foot .addr { display: flex; gap: var(--g-2); min-width: 0; margin-inline-start: auto; }
+.foot .addr code { min-width: 0; max-width: 21em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted-foreground); }
+.foot .links { justify-content: space-between; }
+.foot nav { display: flex; flex-wrap: wrap; align-items: center; gap: var(--g-2) var(--g-4); min-width: 0; }
+.foot a, .foot .link { color: var(--muted-foreground); text-decoration: none; }
+.foot a:hover, .foot .link:hover { color: var(--foreground); text-decoration: underline; text-underline-offset: 0.2em; }
+.foot .link { min-height: 0; padding: 0; border: 0; background: none; font: inherit; }
+.foot [hidden] { display: none; }
+.foot nav code { display: inline-block; max-width: 16ch; overflow: hidden; vertical-align: bottom; text-overflow: ellipsis; white-space: nowrap; color: inherit; font-size: var(--gt-s); }
+@media (max-width: 839px) {
+.foot-row, .foot .links, .foot nav { justify-content: center; }
+.foot-row { padding-inline: var(--g-4); }
+.foot .addr { margin-inline-start: 0; }
+}
+@media (max-height: 560px) {
+.wordmark { font-size: var(--gt-m); margin-bottom: var(--g-4); }
+}
+@media (pointer: coarse) {
+.bar .go { min-height: 0; }
+.pill { min-height: var(--touch); border-radius: calc(var(--touch) / 2); }
+.foot .link { min-height: 0; }
+}
 #canvas {
 --bg: var(--card);
 --sheet: var(--background);
@@ -578,11 +807,10 @@ dialog#proof { padding: var(--space-4); }
   </head>
   <body>
     <!-- The verified runtime below binds these by id when it starts. The
-         frame's top bar does their work; they stay so the runtime runs
-         unchanged. -->
+         frame's top bar does the work of the ones left here; they stay so
+         the runtime runs unchanged. The home search bar (#bar, #q, #go,
+         #suggest) is the runtime's own, shown on the home page. -->
     <div id="engine" hidden>
-      <form id="bar" role="search"><input id="q" type="text" tabindex="-1" aria-hidden="true" /><button id="go" type="submit" tabindex="-1"></button></form>
-      <ul id="suggest" hidden></ul>
       <form id="bar2"><input id="q2" type="text" tabindex="-1" aria-hidden="true" /><button id="share" type="button" tabindex="-1"></button><button id="shield" type="button" tabindex="-1"></button></form>
       <a id="home-link" href="./" tabindex="-1"></a>
       <button id="proof-open" type="button" tabindex="-1" hidden></button>
@@ -594,61 +822,68 @@ dialog#proof { padding: var(--space-4); }
       <span slot="status" id="update" class="chip chip-warn" hidden><button id="reload" class="bare" type="button">Update available. Reload</button></span>
     </prism-frame>
     <main>
+      <!-- Home: the wordmark and the bar, on the golden section of the window. -->
+      <section class="hero" aria-label="Search">
+        <h1 class="wordmark">Holo Search</h1>
+        <div class="search">
+          <div class="surface">
+          <form class="bar" id="bar" autocomplete="off" role="search">
+            <svg class="lens" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5Zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14Z"/></svg>
+            <input id="q" type="text" spellcheck="false" autocapitalize="off" enterkeyhint="go"
+                   aria-label="Search self-verifying apps" placeholder="Search self-verifying apps"
+                   aria-describedby="answer" role="combobox" aria-controls="suggest" aria-expanded="false" aria-autocomplete="list" />
+            <button class="go" id="go" type="submit" aria-label="Enter: verify and open" title="Enter">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M19 7v4H5.83l3.58-3.59L8 6l-6 6 6 6 1.41-1.41L5.83 13H21V7h-2Z"/></svg>
+            </button>
+          </form>
+          <ul class="suggest" id="suggest" role="listbox" hidden></ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- Under the bar: what the model answered to what was typed. -->
+      <section class="below" id="home-card" aria-label="Answer">
+        <div class="answer" id="answer" role="status" aria-live="polite">
+          <p class="q"><span id="echo"></span><span id="cost"></span></p>
+          <p class="a note" id="result"></p>
+        </div>
+        <p class="hint">Type an app's name, or paste its address: a sha256 digest or 8+ of its first digits, a <code>blake3:</code> fingerprint, an IPFS CID, or a shared link.</p>
+        <p class="actions"><button id="try" class="pill" type="button" hidden></button></p>
+      </section>
+
+      <!-- An open app: its name, what the gate found, and the app itself. -->
       <header class="intro">
         <h1 id="name"><span id="name-text">Holo Search</span></h1>
         <p id="purpose" class="lede">Search and run self-verifying Prism apps by their address. Each app is checked against its address and its own acceptance vectors in your browser before it opens.</p>
       </header>
-
-      <div class="panes">
-        <div class="pane">
-          <section id="app-page" class="card" hidden aria-label="App">
-            <div class="canvas" id="canvas"></div>
-            <p id="app-status" class="status-line muted"></p>
-          </section>
-          <section id="home-card" class="card" aria-labelledby="open-title">
-            <h2 id="open-title">Open an app</h2>
-            <p class="hint muted">Type an app's name in the address bar, or paste its address: a sha256 digest or 8 or more of its first digits, a <code>blake3:</code> holo fingerprint, an IPFS CID, or a shared link.</p>
-            <div class="answer" id="answer" role="status" aria-live="polite">
-              <p class="q"><span id="echo"></span><span id="cost"></span></p>
-              <p class="a note" id="result"></p>
-            </div>
-            <p class="row"><button id="try" class="secondary" type="button" hidden></button></p>
-          </section>
-        </div>
-
-        <div class="pane">
-          <section class="card" aria-labelledby="identity-title">
-            <h2 id="identity-title">Identity</h2>
-            <dl class="facts">
-              <div>
-                <dt>Status</dt>
-                <dd><span id="verified" class="chip chip-wait" aria-live="polite">verifying</span><span id="status" class="status-line muted" role="status">Loading the runtime…</span></dd>
-              </div>
-              <div>
-                <dt id="address-label">Model</dt>
-                <dd><code id="address-full" class="hash">sha256:691e1854681cc1b5d94549348c1eb604e01e8ca7c9ada83e444984cce905c489</code></dd>
-              </div>
-              <div id="evidence-row">
-                <dt>Evidence</dt>
-                <dd class="row"><a id="model-link" class="ghost" href="https://github.com/humuhumu33/holo-search/blob/main/src/HoloSearch.lex.tex" target="_blank" rel="noopener">Model</a><button id="proof-open-2" class="ghost" type="button" hidden>Proof</button></dd>
-              </div>
-              <div>
-                <dt>Decided by</dt>
-                <dd><a href="https://github.com/humuhumu33/holo-search#what-is-here">Holo Search's verified gate</a>, its own model run as image <code class="hash">sha256:20b0406e8c33f26758e38cc42509a2b3a3d97ede025c89db0d250c437248f070</code></dd>
-              </div>
-            </dl>
-          </section>
-        </div>
-      </div>
-
-      <footer class="foot muted">
-        <a id="repo" href="https://github.com/humuhumu33/holo-search">Repository</a>
-        <a id="report" href="https://github.com/humuhumu33/holo-search/blob/main/VERIFICATION.md">Report</a>
-        <a href="https://github.com/UOR-Foundation/template">Built from UOR-Foundation/template</a>
-        <a href="https://github.com/Hologram-Technologies/hologram-brand-kit">Hologram brand kit</a>
-        <span>MIT or Apache-2.0</span>
-      </footer>
+      <section id="app-page" class="card" hidden aria-label="App">
+        <div class="canvas" id="canvas"></div>
+        <p id="app-status" class="status-line"></p>
+      </section>
     </main>
+
+    <footer class="foot">
+      <h2 id="identity-title" class="sr-only">Identity</h2>
+      <div class="foot-row identity">
+        <span id="verified" class="chip chip-wait" aria-live="polite">verifying</span>
+        <span id="status" class="status-line" role="status">Loading the runtime…</span>
+        <span class="addr"><span id="address-label">Model</span> <code id="address-full" class="hash">sha256:691e1854681cc1b5d94549348c1eb604e01e8ca7c9ada83e444984cce905c489</code></span>
+      </div>
+      <div class="foot-row links">
+        <nav aria-label="Evidence" id="evidence-row">
+          <a id="model-link" href="https://github.com/humuhumu33/holo-search/blob/main/src/HoloSearch.lex.tex" target="_blank" rel="noopener">Model</a>
+          <button id="proof-open-2" class="link" type="button" hidden>Proof</button>
+          <a href="https://github.com/humuhumu33/holo-search#what-is-here" title="Decided by Holo Search's verified gate: its own model run as image sha256:20b0406e8c33f26758e38cc42509a2b3a3d97ede025c89db0d250c437248f070">Verified gate <code class="hash">sha256:20b0406e8c33f26758e38cc42509a2b3a3d97ede025c89db0d250c437248f070</code></a>
+        </nav>
+        <nav aria-label="About">
+          <a id="repo" href="https://github.com/humuhumu33/holo-search">Repository</a>
+          <a id="report" href="https://github.com/humuhumu33/holo-search/blob/main/VERIFICATION.md">Report</a>
+          <a href="https://github.com/UOR-Foundation/template">Template</a>
+          <a href="https://github.com/Hologram-Technologies/hologram-brand-kit">Brand</a>
+          <span>MIT or Apache-2.0</span>
+        </nav>
+      </div>
+    </footer>
     <dialog id="proof" aria-labelledby="proof-h">
       <button class="close ghost" id="proof-close" type="button" aria-label="Close the proof">Close</button>
       <h2 id="proof-h">Proof</h2>
@@ -910,6 +1145,8 @@ const titled = ({ name, address }) =>
 function paint() {
   const appOpen = !$("app-page").hidden;
   const phase = state.opening ? "opening" : appOpen ? "open" : state.refused ? "refused" : "home";
+  // The stylesheet lays the page out by phase: the search home, or an app.
+  document.body.dataset.phase = phase;
   const address = new URLSearchParams(location.search).get("r") ?? "";
   const full = address.startsWith("blake3:") ? address : address && `sha256:${address}`;
   let title = holo.name;

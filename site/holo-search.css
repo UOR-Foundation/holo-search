@@ -1,34 +1,304 @@
 /* Holo Search's page body, under the canonical <prism-frame>.
  * The top bar is the frame's own, loaded live and styled in its shadow root.
- * The page's type, colours, cards and controls are the template's
+ * The page's base type, colours and controls are the template's
  * (site/prism-page.css and the brand, pinned by frame.lock and brand.lock,
- * loaded before this file). This file styles only what Holo Search adds: the
- * search card, the app it opens, the proof sheet, and the apps' own screens.
- * It declares no colour: every one is a brand variable. */
+ * loaded before this file). This file lays out what Holo Search adds: a
+ * search home in the manner of a search engine's front page, the app it
+ * opens, the proof sheet, and the apps' own screens. Its colours are brand
+ * variables, but for the search bar's spectrum, which is the frame's.
+ *
+ * One proportion throughout, phi = 1.618:
+ *   space   Fibonacci       5 8 13 21 34 55 89 144 px
+ *   type    x phi from 16   16 26 42 68 px (14, the brand's floor, for small print)
+ *   lines   phi for text, 1 for the wordmark, 2/phi = 1.236 for headings
+ *   bar     610 wide, 610 / phi^5 = 55 tall, radius half its height
+ *   page    the search block sits on the golden section: the space above it
+ *           and the space below it stand 1 : phi */
 
-/* The runtime's own controls (its old search bar, its share button) stay in
- * the document so the verified runtime finds every element it binds, but the
- * frame's top bar does their work. */
+:root {
+  --phi: 1.618;
+  --g-1: 0.3125rem;
+  --g-2: 0.5rem;
+  --g-3: 0.8125rem;
+  --g-4: 1.3125rem;
+  --g-5: 2.125rem;
+  --g-6: 3.4375rem;
+  --g-7: 5.5625rem;
+  --g-8: 9rem;
+  --gt-s: 0.875rem;
+  --gt-b: 1rem;
+  --gt-m: 1.625rem;
+  --gt-l: 2.625rem;
+  --gt-xl: 4.25rem;
+  --bar-w: 38.125rem;
+  --bar-h: 3.4375rem;
+  --col: min(100% - 2 * var(--g-4), var(--bar-w));
+  --bar-ground: var(--card);
+}
+.dark { --bar-ground: var(--muted); }
+
+/* The runtime's controls the frame stands in for: kept, never shown. */
 #engine { display: none; }
 
-/* The open app replaces the search card; the identity card beside it
- * describes whichever is showing. */
-#app-page:not([hidden]) + #home-card { display: none; }
-#app-page[hidden] { display: none; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
-.lede:empty { display: none; }
+/* The window: the frame on top, the page, the footer on the floor. */
+body { display: flex; flex-direction: column; min-height: 100dvh; line-height: var(--phi); }
+main {
+  flex: 1 0 auto;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(var(--g-5), 1fr) auto minmax(var(--g-8), 1.618fr);
+  justify-items: center;
+}
 
-/* What Holo Search answered: the model's reply to what was typed. */
-.answer .q { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--space-1) var(--space-3); margin: 0 0 var(--space-1); color: var(--muted-foreground); font-family: var(--font-mono); font-size: var(--text-14); overflow-wrap: anywhere; }
+/* Home: the wordmark and the bar in row 2; what the model answered hangs in
+ * row 3, so typing never moves the bar. */
+.hero { grid-row: 2; width: var(--col); display: grid; grid-template-columns: minmax(0, 1fr); justify-items: center; }
+.below { grid-row: 3; align-self: start; width: var(--col); padding: var(--g-3) var(--g-4) var(--g-5); }
+
+.wordmark {
+  margin: 0 0 var(--g-5);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(var(--gt-l), 13vw, var(--gt-xl));
+  line-height: 1;
+  letter-spacing: var(--tracking-display);
+  color: var(--foreground);
+  user-select: none;
+}
+
+/* The bar. One surface holds the bar and, when they open, the suggestions
+ * under it; it floats over the page, so opening them never moves the layout.
+ * Its outline is the frame's address-bar spectrum, always on. */
+.search { position: relative; width: 100%; height: var(--bar-h); }
+.surface {
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  left: 0;
+  right: 0;
+  border-radius: calc(var(--bar-h) / 2);
+  background: var(--bar-ground);
+  color: var(--foreground);
+  transition: box-shadow var(--duration) var(--ease);
+}
+.search:has(#suggest:not([hidden])) .surface { border-radius: calc(var(--bar-h) / 2) calc(var(--bar-h) / 2) var(--g-4) var(--g-4); }
+html:not(.dark) .surface:is(:hover, :focus-within) { box-shadow: 0 1px var(--g-2) var(--shadow); }
+
+/* The spectrum: the stops, angle, 200% sweep and 24 s drift of the frame's
+ * address bar (prism-frame, UOR-Foundation/template@f4bdc301), drawn as a
+ * 1 px ring by masking the gradient to the padding. The frame shows it only
+ * while its bar is focused; here it is the bar's edge at all times. */
+.surface {
+  --spectrum-red: #fb5661;
+  --spectrum-orange: #fa792e;
+  --spectrum-amber: #f9cf24;
+  --spectrum-yellow: #f6e41e;
+  --spectrum-green: #25d05e;
+  --spectrum-cyan: #20d0f3;
+  --spectrum-blue: #4f81f8;
+  --spectrum-violet: #ae6ff6;
+  --spectrum-pink: #f368c5;
+  --spectrum: linear-gradient(100deg,
+    var(--spectrum-red) 0%, var(--spectrum-orange) 7%, var(--spectrum-amber) 14%, var(--spectrum-yellow) 19%,
+    var(--spectrum-green) 25%, var(--spectrum-cyan) 31%, var(--spectrum-blue) 38%, var(--spectrum-violet) 45%,
+    var(--spectrum-pink) 48%, var(--spectrum-red) 50%, var(--spectrum-orange) 57%, var(--spectrum-amber) 64%,
+    var(--spectrum-yellow) 69%, var(--spectrum-green) 75%, var(--spectrum-cyan) 81%, var(--spectrum-blue) 88%,
+    var(--spectrum-violet) 95%, var(--spectrum-pink) 98%, var(--spectrum-red) 100%);
+}
+.surface::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  padding: 1px;
+  border-radius: inherit;
+  background-image: var(--spectrum);
+  background-size: 200% 100%;
+  opacity: 0.618;
+  pointer-events: none;
+  animation: spectrum-drift 24s linear infinite;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  transition: opacity 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.surface:is(:hover, :focus-within)::before { opacity: 0.854; }@keyframes spectrum-drift { to { background-position: 200% 0; } }
+@media (prefers-reduced-motion: reduce) { .surface::before { animation: none; } }
+
+.bar {
+  display: flex;
+  align-items: center;
+  gap: var(--g-3);
+  width: 100%;
+  height: var(--bar-h);
+  padding: 0 var(--g-2) 0 var(--g-4);
+  cursor: text;
+}
+.bar .lens { flex: none; width: var(--g-4); height: var(--g-4); color: var(--muted-foreground); }
+.bar input[type="text"] {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 100%;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: var(--foreground);
+  caret-color: var(--foreground);
+  font-family: var(--font-sans);
+  font-size: var(--gt-b);
+  letter-spacing: 0.005em;
+  outline: none;
+}
+.bar input[type="text"]::placeholder { color: var(--muted-foreground); }
+.bar input:disabled { cursor: progress; }
+
+/* The action: an icon in the bar's right end, as a search box's mic and lens
+ * are. A 34 circle, the icon 21 in it; the circle shows only on hover. */
+.bar .go {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: var(--g-5);
+  height: var(--g-5);
+  min-height: 0;
+  margin-right: var(--g-1);
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--muted-foreground);
+}
+.bar .go:hover, .bar .go:focus-visible { background: var(--accent); color: var(--foreground); }
+.bar .go svg { width: var(--g-4); height: var(--g-4); }
+.bar .go[hidden] { display: none; }
+
+/* Suggestions: inside the same surface, under a hairline. */
+.suggest {
+  margin: 0;
+  padding: 0 0 var(--g-3);
+  list-style: none;
+  border-radius: 0 0 var(--g-4) var(--g-4);
+  overflow: hidden;
+}
+.suggest::before { content: ""; display: block; height: var(--border-width); margin: 0 var(--g-4) var(--g-2); background: var(--border); }
+.suggest[hidden] { display: none; }
+.suggest li {
+  display: grid;
+  grid-template-columns: var(--g-4) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--g-3);
+  min-height: var(--g-5);
+  padding: 0 var(--g-4);
+  cursor: pointer;
+  font-size: var(--gt-b);
+}
+.suggest li svg { width: var(--g-3); height: var(--g-3); color: var(--muted-foreground); }
+.suggest li > :last-child { font-family: var(--font-mono); font-size: var(--gt-s); color: var(--muted-foreground); white-space: nowrap; }
+.suggest li[aria-selected="true"], .suggest li:hover { background: var(--accent); }
+.suggest .none { grid-template-columns: minmax(0, 1fr); color: var(--muted-foreground); cursor: default; padding-block: var(--g-2); }
+.suggest .none:hover { background: none; }
+
+/* The home shows the wordmark and the bar, and under the bar only what the
+ * model answers. The hint, the try button and the footer stay in the page
+ * (the runtime and the frame write to them) but are drawn only with an app
+ * open or refused. */
+.hint, .actions { display: none !important; }
+body:not([data-phase="open"]):not([data-phase="refused"]) .foot { display: none; }
+
+/* Under the bar: the model's answer. */
+.answer { margin: 0; }
+.answer p { margin: 0; }
+.answer .q { display: flex; justify-content: space-between; gap: var(--g-3); font-family: var(--font-mono); font-size: var(--gt-s); color: var(--muted-foreground); }
+.answer .q span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .answer .q:has(#echo:empty):has(#cost:empty) { display: none; }
-.answer .a { margin: 0 0 var(--space-4); font-size: var(--text-16); overflow-wrap: anywhere; }
+.answer .a { font-size: var(--gt-b); overflow-wrap: anywhere; }
 .answer .a:empty { display: none; }
 .answer .a.bad { color: var(--destructive); }
-.hint { margin: 0 0 var(--space-4); }
-.status-line { display: block; margin: var(--space-2) 0 0; font-size: var(--text-14); overflow-wrap: anywhere; }
-.facts [hidden], #home-card [hidden] { display: none; }
-.facts a:not(.ghost) { color: var(--link); text-decoration: underline; text-decoration-color: var(--border-strong); text-underline-offset: 0.2em; }
-.facts a:not(.ghost):hover { color: var(--link-hover); }
+.hint { margin: 0; font-size: var(--gt-s); color: var(--muted-foreground); text-align: center; text-wrap: balance; }
+.hint code { font-size: inherit; }
+.below:has(#result:not(:empty)) .hint, .below:has(#echo:not(:empty)) .hint { display: none; }
+.actions { display: flex; justify-content: center; margin: var(--g-4) 0 0; }
+.pill {
+  min-height: var(--g-5);
+  padding: 0 var(--g-4);
+  border-radius: calc(var(--g-5) / 2);
+  border: var(--border-width) solid var(--border);
+  background: var(--bar-ground);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  font-size: var(--gt-s);
+  font-weight: 500;
+}
+.pill:hover { background: var(--accent); border-color: var(--input); }
+.pill[hidden] { display: none; }
+
+/* An app opening or refused: the home stays, and what the gate is doing
+ * shows under the answer. Open: the bar gives way to the app, and the
+ * frame's address bar searches from there. */
+.intro { display: none; width: var(--col); margin: 0; }
+.intro h1 { margin: 0 0 var(--g-2); font-size: var(--gt-l); line-height: 1.236; letter-spacing: -0.035em; }
+.intro .lede { margin: 0; max-width: none; font-size: var(--gt-b); color: var(--muted-foreground); text-wrap: pretty; }
+body:is([data-phase="opening"], [data-phase="refused"]) main { grid-template-rows: minmax(var(--g-5), 1fr) auto auto minmax(var(--g-8), 1.618fr); }
+body:is([data-phase="opening"], [data-phase="refused"]) .below { padding-bottom: var(--g-3); }
+body:is([data-phase="opening"], [data-phase="refused"]) .below :is(.hint, .actions) { display: none; }
+body:is([data-phase="opening"], [data-phase="refused"]) .intro { display: block; grid-row: 4; align-self: start; padding: 0 var(--g-4); }
+body:is([data-phase="opening"], [data-phase="refused"]) .intro h1 { display: none; }
+
+body[data-phase="open"] main { display: block; padding: var(--g-6) 0 var(--g-7); }
+body[data-phase="open"] :is(.hero, .below) { display: none; }
+body[data-phase="open"] .intro { display: block; margin: 0 auto var(--g-5); }
+#app-page { width: var(--col); margin: 0 auto; padding: var(--g-5); border-radius: var(--g-4); }
+#app-page[hidden] { display: none; }
+#app-page .status-line { margin: var(--g-4) 0 0; font-size: var(--gt-s); color: var(--muted-foreground); overflow-wrap: anywhere; }
+@media (max-width: 599px) { #app-page { padding: var(--g-4); } }
+
+/* The footer: two rows on the frame's ground, 13 + 21 + 13 tall each, about
+ * the height of the frame's bar, so the window is framed alike above and below. */
+.foot {
+  display: block;
+  padding: 0 0 var(--safe-bottom);
+  background: var(--sidebar);
+  color: var(--muted-foreground);
+  border-top: var(--border-width) solid var(--sidebar-border);
+  font-size: var(--gt-s);
+  line-height: var(--g-4);
+}
+.foot-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--g-2) var(--g-4); padding: var(--g-3) var(--g-5); }
+.foot-row + .foot-row { border-top: var(--border-width) solid var(--sidebar-border); }
+.foot .identity .chip { min-height: var(--g-4); padding: 0 var(--g-2); font-size: var(--gt-s); line-height: 1; }
+.foot .identity .status-line { min-width: 0; margin: 0; font-size: var(--gt-s); overflow-wrap: anywhere; }
+.foot .identity .status-line[hidden] { display: none; }
+.foot .addr { display: flex; gap: var(--g-2); min-width: 0; margin-inline-start: auto; }
+.foot .addr code { min-width: 0; max-width: 21em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted-foreground); }
+.foot .links { justify-content: space-between; }
+.foot nav { display: flex; flex-wrap: wrap; align-items: center; gap: var(--g-2) var(--g-4); min-width: 0; }
+.foot a, .foot .link { color: var(--muted-foreground); text-decoration: none; }
+.foot a:hover, .foot .link:hover { color: var(--foreground); text-decoration: underline; text-underline-offset: 0.2em; }
+.foot .link { min-height: 0; padding: 0; border: 0; background: none; font: inherit; }
+.foot [hidden] { display: none; }
+.foot nav code { display: inline-block; max-width: 16ch; overflow: hidden; vertical-align: bottom; text-overflow: ellipsis; white-space: nowrap; color: inherit; font-size: var(--gt-s); }
+@media (max-width: 839px) {
+  .foot-row, .foot .links, .foot nav { justify-content: center; }
+  .foot-row { padding-inline: var(--g-4); }
+  .foot .addr { margin-inline-start: 0; }
+}
+
+/* Compact height: the bar keeps its place, the wordmark gives way first. */
+@media (max-height: 560px) {
+  .wordmark { font-size: var(--gt-m); margin-bottom: var(--g-4); }
+}
+@media (pointer: coarse) {
+  .bar .go { min-height: 0; }
+  .pill { min-height: var(--touch); border-radius: calc(var(--touch) / 2); }
+  .foot .link { min-height: 0; }
+}
 
 /* The app, drawn from the Screen its model declares. The runtime writes the
  * app's declared theme onto #app-page; inside the frame the brand sets the

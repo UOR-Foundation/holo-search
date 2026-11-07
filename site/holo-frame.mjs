@@ -60,6 +60,8 @@ const titled = ({ name, address }) =>
 function paint() {
   const appOpen = !$("app-page").hidden;
   const phase = state.opening ? "opening" : appOpen ? "open" : state.refused ? "refused" : "home";
+  // The stylesheet lays the page out by phase: the search home, or an app.
+  document.body.dataset.phase = phase;
   const address = new URLSearchParams(location.search).get("r") ?? "";
   const full = address.startsWith("blake3:") ? address : address && `sha256:${address}`;
   let title = holo.name;
