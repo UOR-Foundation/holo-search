@@ -3,58 +3,110 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <script>// Holo Search opens on Earth at night (NASA, on Unsplash), in the frame's
-// immersive mode. The frame loads its photos only after the visitor's first
-// input, so without this a new visitor sees a bare ground first. This runs
-// before first paint: it sets the frame's own classes and properties, and
-// starts the photo at high priority from this site, with a 40 px copy of it
-// inline in the stylesheet underneath. Choices stay the frame's: a mode or a
-// photo picked in its panel is stored under its keys and painted here on the
-// next visit.
+    <script>// Holo Search's ground, in the frame's immersive mode: Earth at night (NASA,
+// on Unsplash) on the search home, and an aurora (Condor Wei, on Unsplash)
+// behind every app it opens. The frame loads its photos only after the
+// visitor's first input, so without this a new visitor sees a bare ground
+// first. This runs before first paint: it sets the frame's own classes and
+// properties and starts the photo at high priority from this site, with a
+// 40 px copy of it inline in the stylesheet underneath; then it fetches the
+// other photo while the page is idle, so a switch between home and an app is
+// instant too. Choices stay the frame's: a mode or a photo picked in its
+// panel is stored under its keys and wins over both defaults.
 (function () {
-  var mode = null;
-  var photo = null;
-  var recent = [];
-  try {
-    mode = localStorage.getItem("prism-theme");
-    photo = localStorage.getItem("prism-backdrop");
-    recent = JSON.parse(localStorage.getItem("prism-backdrop-recent") || "[]");
-  } catch (e) {}
-  if (mode === "light" || mode === "dark") return;
-
   var root = document.documentElement;
-  var earth = "Q1p7bh3SHj8";
-  var id = photo || earth;
-  var url = null;
-  var color = null;
-  if (id === earth) {
-    url = new URL("backdrop.webp", document.baseURI).href;
-    color = "#0c2626";
-    root.classList.add("holo-earth");
-  } else {
-    // A photo found by search is kept with its address; the frame's own
-    // photos are published beside it under their Unsplash id.
-    var found = Array.isArray(recent) ? recent.filter(function (p) { return p && p.id === id; })[0] : null;
-    if (found) {
-      if (/^https:\/\/images\.unsplash\.com\/[^"\\\s]+$/.test(found.image)) url = found.image + "&w=2400";
-      color = found.color;
-    } else if (/^[\w-]{6,20}$/.test(id)) {
-      url = "https://uor-foundation.github.io/template/frame/backdrops/" + id + ".jpg";
+  var own = {
+    Q1p7bh3SHj8: { file: "backdrop.webp", color: "#0c2626" },
+    oMcTmNHclZI: { file: "backdrop-app.webp", color: "#0c2626" },
+  };
+  var home = "Q1p7bh3SHj8";
+  var app = "oMcTmNHclZI";
+
+  function stored(key) {
+    try {
+      return localStorage.getItem(key);
+    } catch (e) {
+      return null;
     }
   }
 
-  root.classList.add("dark", "immersive");
-  if (/^#[0-9a-f]{6}$/i.test(color || "")) root.style.setProperty("--prism-backdrop-color", color);
-  if (!url) return;
-  var preload = document.createElement("link");
-  preload.rel = "preload";
-  preload.as = "image";
-  preload.href = url;
-  preload.fetchPriority = "high";
-  document.head.appendChild(preload);
-  root.style.setProperty("--prism-backdrop", 'url("' + url + '")');
-  // site/holo-frame.mjs hands this to the frame, so it does not load the photo again.
-  root.dataset.backdrop = id;
+  // The visitor's own photo: one of the frame's, published beside it under
+  // its Unsplash id, or one found by search, kept with its address.
+  function picked(id) {
+    var recent = [];
+    try {
+      recent = JSON.parse(stored("prism-backdrop-recent") || "[]");
+    } catch (e) {}
+    var found = Array.isArray(recent) ? recent.filter(function (p) { return p && p.id === id; })[0] : null;
+    if (found) {
+      var url = /^https:\/\/images\.unsplash\.com\/[^"\\\s]+$/.test(found.image) ? found.image + "&w=2400" : null;
+      return { url: url, color: found.color };
+    }
+    return /^[\w-]{6,20}$/.test(id) ? { url: "https://uor-foundation.github.io/template/frame/backdrops/" + id + ".jpg" } : null;
+  }
+
+  function url(file) {
+    return new URL(file, document.baseURI).href;
+  }
+
+  // Once the frame runs, what it shows is the truth: it may have painted a
+  // photo itself, or cleared it for another mode.
+  function showing() {
+    var frame = document.getElementById("frame");
+    return frame && window.customElements && customElements.get("prism-frame") ? frame.backdrop : root.dataset.backdrop;
+  }
+
+  function show(id, photo, priority) {
+    if (showing() === id) return;
+    if (/^#[0-9a-f]{6}$/i.test(photo.color || "")) root.style.setProperty("--prism-backdrop-color", photo.color);
+    if (!photo.url) return;
+    var preload = document.createElement("link");
+    preload.rel = "preload";
+    preload.as = "image";
+    preload.href = photo.url;
+    preload.fetchPriority = priority;
+    document.head.appendChild(preload);
+    root.style.setProperty("--prism-backdrop", 'url("' + photo.url + '")');
+    // The frame takes this as its own (site/holo-frame.mjs), so it does not
+    // load the photo again or put its default in its place.
+    root.dataset.backdrop = id;
+    var frame = document.getElementById("frame");
+    if (frame) {
+      frame.backdrop = id;
+      frame.chosen = { id: id };
+    }
+  }
+
+  // Paints the ground for the home (false) or an app (true). Called again by
+  // site/holo-frame.mjs whenever the page moves between them.
+  function paint(opened) {
+    var mode = stored("prism-theme");
+    if (mode === "light" || mode === "dark") return;
+    root.classList.add("dark", "immersive");
+    var photo = stored("prism-backdrop");
+    if (photo) {
+      var found = own[photo] ? { url: url(own[photo].file), color: own[photo].color } : picked(photo);
+      if (found) show(photo, found, "high");
+      return;
+    }
+    var id = opened ? app : home;
+    show(id, { url: url(own[id].file), color: own[id].color }, "high");
+  }
+
+  window.holoBackdrop = paint;
+  paint(new URLSearchParams(location.search).has("r"));
+
+  // The other default, fetched once the page is idle.
+  if (stored("prism-backdrop") || !root.classList.contains("immersive")) return;
+  addEventListener("load", function () {
+    var later = window.requestIdleCallback || function (f) { setTimeout(f, 1000); };
+    later(function () {
+      var other = root.dataset.backdrop === home ? app : home;
+      var image = new Image();
+      image.fetchPriority = "low";
+      image.src = url(own[other].file);
+    });
+  });
 })();</script>
     <meta name="description" content="Search and run self-verifying Prism apps by their address. Each app is checked against its address and its own acceptance vectors in your browser before it opens." />
     <meta name="color-scheme" content="light dark" />
@@ -871,8 +923,11 @@ z-index: -1;
 pointer-events: none;
 background: linear-gradient(rgb(12 10 9 / 0.5), rgb(12 10 9 / 0.62)), var(--prism-backdrop, none) center / cover no-repeat, var(--prism-backdrop-color, #151312);
 }
-html.immersive.holo-earth body::before {
+html.immersive[data-backdrop="Q1p7bh3SHj8"] body::before {
 background: linear-gradient(rgb(12 10 9 / 0.5), rgb(12 10 9 / 0.62)), var(--prism-backdrop, none) center / cover no-repeat, url("data:image/webp;base64,UklGRrgAAABXRUJQVlA4IKwAAAAQBgCdASooABsAPtFUo00oJCMiNVQIAQAaCWcAyyw5X7vhbyF+pMSGq9m2YLhwU7Rfy+92VFZkGkAA/vrmfh4hnSz1ilWTm7g9bXs4UeTVsvoypN0zAo5SrJ+woGRf+yIX00lq1mRSducbh27meHVAgyMONCCViLXy3jNjh8kUDLg8hJ+5IK+KziOnO9Hc1jEo4vx3H51ymbcXm9AWJEOiXnTpwxzI0/lpDoAA") center / cover no-repeat, var(--prism-backdrop-color, #151312);
+}
+html.immersive[data-backdrop="oMcTmNHclZI"] body::before {
+background: linear-gradient(rgb(12 10 9 / 0.5), rgb(12 10 9 / 0.62)), var(--prism-backdrop, none) center / cover no-repeat, url("data:image/webp;base64,UklGRsoAAABXRUJQVlA4IL4AAACwBgCdASooABsAPtFWok2oJCMiMBVaqQAaCUAYIdvhjwOUcuD/wP05LYBH761vJAIe7AZWc/CyviJFRxh4gAD++jp9Xqv/pLdp5u2PkbFn2byZTciFYSycaRs6F8erhUrPUVa2K15o7Ac1bjuEwYbk9U1B6or5JM3eWXS81La+LvH9h5d4HrB8z3NPMptgLWtMBifqp1D9+HJVmiESm+mWAcZdh0E4zWkf92Oyzn6M1qNR6g8mXcRr6dOW8AAA") center / cover no-repeat, var(--prism-backdrop-color, #151312);
 }</style>
     <script>// The dark ground is the brand's primary mode: follow the system, remember a
 // choice. Runs before first paint so the page never flashes the other ground.
@@ -1541,6 +1596,10 @@ function paint() {
   const phase = state.opening ? "opening" : appOpen ? "open" : state.refused ? "refused" : "home";
   // The stylesheet lays the page out by phase: the search home, or an app.
   document.body.dataset.phase = phase;
+  // The ground follows: Earth at night on the home, the aurora behind an app
+  // (site/backdrop.js). The address counts too, so a shared link to an app
+  // never shows the home's photo while its app is still loading.
+  window.holoBackdrop?.(phase !== "home" || new URLSearchParams(location.search).has("r"));
   const address = new URLSearchParams(location.search).get("r") ?? "";
   const full = address.startsWith("blake3:") ? address : address && `sha256:${address}`;
   let title = holo.name;
@@ -1630,7 +1689,7 @@ function watch() {
 
 // The photo site/backdrop.js painted before the frame arrived becomes the
 // frame's own: it does not fetch it again, and a visitor who has not picked a
-// photo keeps Earth at night as the frame's choice instead of its default.
+// photo keeps Holo Search's default as the frame's choice instead of its own.
 const painted = document.documentElement.dataset.backdrop;
 if (painted) {
   element.backdrop = painted;

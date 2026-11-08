@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 // Renders index.html: Holo Search inside the Prism frame, still one file.
 //
-//   node bootstrap/holo-page.mjs           rewrite index.html (and og.png, backdrop.webp) in place
-//   node bootstrap/holo-page.mjs --check   fail unless index.html, og.png and backdrop.webp are what this would write
+//   node bootstrap/holo-page.mjs           rewrite index.html (and og.png and the backdrops) in place
+//   node bootstrap/holo-page.mjs --check   fail unless index.html, og.png and the backdrops are what this would write
 //
 // The page has three parts, and this script owns only how they are put
 // together:
@@ -292,8 +292,8 @@ for (const key of RUNTIME) {
 }
 
 // Files the page links to, served beside it: the card image, and the
-// backdrop site/backdrop.js paints for a new visitor.
-const beside = { "og.png": await read("site/og.png", null), "backdrop.webp": await read("site/backdrop.webp", null) };
+// backdrops site/backdrop.js paints for a new visitor, home and app.
+const beside = { "og.png": await read("site/og.png", null), "backdrop.webp": await read("site/backdrop.webp", null), "backdrop-app.webp": await read("site/backdrop-app.webp", null) };
 if (check) {
   const current = await read("index.html");
   if (current !== html) fail("index.html is not what bootstrap/holo-page.mjs renders; run it");
@@ -301,7 +301,7 @@ if (check) {
     const served = await read(file, null).catch(() => null);
     if (!served || !served.equals(bytes)) fail(`${file} is not site/${file}; run bootstrap/holo-page.mjs`);
   }
-  console.log("holo-page: index.html, og.png and backdrop.webp are current");
+  console.log("holo-page: index.html, og.png and the backdrops are current");
 } else {
   await writeFile(join(root, "index.html"), html);
   for (const [file, bytes] of Object.entries(beside)) await writeFile(join(root, file), bytes);

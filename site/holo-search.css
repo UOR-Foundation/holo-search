@@ -404,8 +404,9 @@ dialog#proof .close { float: right; margin: calc(-1 * var(--space-2)) calc(-1 * 
 
 /* The immersive ground, from first paint. site/backdrop.js sets the classes
    and the photo before the frame arrives; the frame's own sheet repeats these
-   rules once it loads. Under Earth at night lies a 40 px copy of it, inline,
-   so the first frame already shows the photo while the full one loads. */
+   rules once it loads. Under each of Holo Search's two photos lies a 40 px
+   copy of it, inline, so the first frame already shows the photo while the
+   full one loads. */
 html.immersive { background: var(--prism-backdrop-color, #151312); }
 html.immersive body { background: transparent; }
 html.immersive body::before {
@@ -420,6 +421,9 @@ html.immersive body::before {
   pointer-events: none;
   background: linear-gradient(rgb(12 10 9 / 0.5), rgb(12 10 9 / 0.62)), var(--prism-backdrop, none) center / cover no-repeat, var(--prism-backdrop-color, #151312);
 }
-html.immersive.holo-earth body::before {
+html.immersive[data-backdrop="Q1p7bh3SHj8"] body::before {
   background: linear-gradient(rgb(12 10 9 / 0.5), rgb(12 10 9 / 0.62)), var(--prism-backdrop, none) center / cover no-repeat, url("data:image/webp;base64,UklGRrgAAABXRUJQVlA4IKwAAAAQBgCdASooABsAPtFUo00oJCMiNVQIAQAaCWcAyyw5X7vhbyF+pMSGq9m2YLhwU7Rfy+92VFZkGkAA/vrmfh4hnSz1ilWTm7g9bXs4UeTVsvoypN0zAo5SrJ+woGRf+yIX00lq1mRSducbh27meHVAgyMONCCViLXy3jNjh8kUDLg8hJ+5IK+KziOnO9Hc1jEo4vx3H51ymbcXm9AWJEOiXnTpwxzI0/lpDoAA") center / cover no-repeat, var(--prism-backdrop-color, #151312);
+}
+html.immersive[data-backdrop="oMcTmNHclZI"] body::before {
+  background: linear-gradient(rgb(12 10 9 / 0.5), rgb(12 10 9 / 0.62)), var(--prism-backdrop, none) center / cover no-repeat, url("data:image/webp;base64,UklGRsoAAABXRUJQVlA4IL4AAACwBgCdASooABsAPtFWok2oJCMiMBVaqQAaCUAYIdvhjwOUcuD/wP05LYBH761vJAIe7AZWc/CyviJFRxh4gAD++jp9Xqv/pLdp5u2PkbFn2byZTciFYSycaRs6F8erhUrPUVa2K15o7Ac1bjuEwYbk9U1B6or5JM3eWXS81La+LvH9h5d4HrB8z3NPMptgLWtMBifqp1D9+HJVmiESm+mWAcZdh0E4zWkf92Oyzn6M1qNR6g8mXcRr6dOW8AAA") center / cover no-repeat, var(--prism-backdrop-color, #151312);
 }

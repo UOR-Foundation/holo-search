@@ -62,6 +62,10 @@ function paint() {
   const phase = state.opening ? "opening" : appOpen ? "open" : state.refused ? "refused" : "home";
   // The stylesheet lays the page out by phase: the search home, or an app.
   document.body.dataset.phase = phase;
+  // The ground follows: Earth at night on the home, the aurora behind an app
+  // (site/backdrop.js). The address counts too, so a shared link to an app
+  // never shows the home's photo while its app is still loading.
+  window.holoBackdrop?.(phase !== "home" || new URLSearchParams(location.search).has("r"));
   const address = new URLSearchParams(location.search).get("r") ?? "";
   const full = address.startsWith("blake3:") ? address : address && `sha256:${address}`;
   let title = holo.name;
@@ -151,7 +155,7 @@ function watch() {
 
 // The photo site/backdrop.js painted before the frame arrived becomes the
 // frame's own: it does not fetch it again, and a visitor who has not picked a
-// photo keeps Earth at night as the frame's choice instead of its default.
+// photo keeps Holo Search's default as the frame's choice instead of its own.
 const painted = document.documentElement.dataset.backdrop;
 if (painted) {
   element.backdrop = painted;
