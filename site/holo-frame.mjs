@@ -149,5 +149,14 @@ function watch() {
   paint();
 }
 
+// The photo site/backdrop.js painted before the frame arrived becomes the
+// frame's own: it does not fetch it again, and a visitor who has not picked a
+// photo keeps Earth at night as the frame's choice instead of its default.
+const painted = document.documentElement.dataset.backdrop;
+if (painted) {
+  element.backdrop = painted;
+  element.chosen ??= { id: painted };
+}
+
 watch();
 frame();

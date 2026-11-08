@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 // Renders index.html: Holo Search inside the Prism frame, still one file.
 //
-//   node bootstrap/holo-page.mjs           rewrite index.html (and og.png) in place
-//   node bootstrap/holo-page.mjs --check   fail unless index.html and og.png are what this would write
+//   node bootstrap/holo-page.mjs           rewrite index.html (and og.png, backdrop.webp) in place
+//   node bootstrap/holo-page.mjs --check   fail unless index.html, og.png and backdrop.webp are what this would write
 //
 // The page has three parts, and this script owns only how they are put
 // together:
@@ -211,6 +211,8 @@ for (const [, file] of fonts.matchAll(/url\("\.\.\/fonts\/([^"]+\.woff2)"\)/g)) 
 }
 const css = minify([await read("site/brand/hologram-warm.css"), fonts, await read("site/prism-page.css"), await read("site/holo-search.css")].join("\n"));
 const theme = (await read("site/theme.js")).trim();
+const backdrop = (await read("site/backdrop.js")).trim();
+if (backdrop.includes("</script")) fail("site/backdrop.js contains </script");
 
 // The template's frame loader and its helpers, cut unchanged from
 // site/app.mjs: each function from its leading comment to its closing brace.
@@ -273,6 +275,7 @@ let html = fill(await read("site/holo-search.template.html"), {
   REPORT: escape(meta.report),
   INLINE_CSS: css,
   INLINE_THEME: theme,
+  INLINE_BACKDROP: backdrop,
   APP_DATA: JSON.stringify(appData).replace(/</g, "\u003c"),
   FRAME: header,
   RUNTIME: runtimeHtml,
@@ -288,15 +291,19 @@ for (const key of RUNTIME) {
   console.log(`holo-page: runtime ${key} unchanged, sha256 ${sha(before[key].body)}`);
 }
 
-const ogFrame = await read("site/og.png", null);
+// Files the page links to, served beside it: the card image, and the
+// backdrop site/backdrop.js paints for a new visitor.
+const beside = { "og.png": await read("site/og.png", null), "backdrop.webp": await read("site/backdrop.webp", null) };
 if (check) {
   const current = await read("index.html");
-  const og = await read("og.png", null).catch(() => null);
   if (current !== html) fail("index.html is not what bootstrap/holo-page.mjs renders; run it");
-  if (!og || !og.equals(ogFrame)) fail("og.png is not site/og.png; run bootstrap/holo-page.mjs");
-  console.log("holo-page: index.html and og.png are current");
+  for (const [file, bytes] of Object.entries(beside)) {
+    const served = await read(file, null).catch(() => null);
+    if (!served || !served.equals(bytes)) fail(`${file} is not site/${file}; run bootstrap/holo-page.mjs`);
+  }
+  console.log("holo-page: index.html, og.png and backdrop.webp are current");
 } else {
   await writeFile(join(root, "index.html"), html);
-  await writeFile(join(root, "og.png"), ogFrame);
+  for (const [file, bytes] of Object.entries(beside)) await writeFile(join(root, file), bytes);
   console.log(`holo-page: index.html rendered, ${Buffer.byteLength(html)} bytes, frame from ${lock.source.repository}@${lock.source.commit.slice(0, 12)}`);
 }

@@ -3,6 +3,59 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <script>// Holo Search opens on Earth at night (NASA, on Unsplash), in the frame's
+// immersive mode. The frame loads its photos only after the visitor's first
+// input, so without this a new visitor sees a bare ground first. This runs
+// before first paint: it sets the frame's own classes and properties, and
+// starts the photo at high priority from this site, with a 40 px copy of it
+// inline in the stylesheet underneath. Choices stay the frame's: a mode or a
+// photo picked in its panel is stored under its keys and painted here on the
+// next visit.
+(function () {
+  var mode = null;
+  var photo = null;
+  var recent = [];
+  try {
+    mode = localStorage.getItem("prism-theme");
+    photo = localStorage.getItem("prism-backdrop");
+    recent = JSON.parse(localStorage.getItem("prism-backdrop-recent") || "[]");
+  } catch (e) {}
+  if (mode === "light" || mode === "dark") return;
+
+  var root = document.documentElement;
+  var earth = "Q1p7bh3SHj8";
+  var id = photo || earth;
+  var url = null;
+  var color = null;
+  if (id === earth) {
+    url = new URL("backdrop.webp", document.baseURI).href;
+    color = "#0c2626";
+    root.classList.add("holo-earth");
+  } else {
+    // A photo found by search is kept with its address; the frame's own
+    // photos are published beside it under their Unsplash id.
+    var found = Array.isArray(recent) ? recent.filter(function (p) { return p && p.id === id; })[0] : null;
+    if (found) {
+      if (/^https:\/\/images\.unsplash\.com\/[^"\\\s]+$/.test(found.image)) url = found.image + "&w=2400";
+      color = found.color;
+    } else if (/^[\w-]{6,20}$/.test(id)) {
+      url = "https://uor-foundation.github.io/template/frame/backdrops/" + id + ".jpg";
+    }
+  }
+
+  root.classList.add("dark", "immersive");
+  if (/^#[0-9a-f]{6}$/i.test(color || "")) root.style.setProperty("--prism-backdrop-color", color);
+  if (!url) return;
+  var preload = document.createElement("link");
+  preload.rel = "preload";
+  preload.as = "image";
+  preload.href = url;
+  preload.fetchPriority = "high";
+  document.head.appendChild(preload);
+  root.style.setProperty("--prism-backdrop", 'url("' + url + '")');
+  // site/holo-frame.mjs hands this to the frame, so it does not load the photo again.
+  root.dataset.backdrop = id;
+})();</script>
     <meta name="description" content="Search and run self-verifying Prism apps by their address. Each app is checked against its address and its own acceptance vectors in your browser before it opens." />
     <meta name="color-scheme" content="light dark" />
     <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f3f3ee" />
@@ -803,6 +856,23 @@ dialog#proof { padding: var(--space-4); }
 }
 @media (pointer: coarse) {
 #canvas { --control: var(--touch); }
+}
+html.immersive { background: var(--prism-backdrop-color, #151312); }
+html.immersive body { background: transparent; }
+html.immersive body::before {
+content: "";
+position: fixed;
+top: var(--prism-window-top, 0px);
+right: var(--prism-window-right, 0px);
+bottom: var(--prism-window-bottom, 0px);
+left: var(--prism-window-left, 0px);
+border-radius: var(--prism-window-radius, 0px);
+z-index: -1;
+pointer-events: none;
+background: linear-gradient(rgb(12 10 9 / 0.5), rgb(12 10 9 / 0.62)), var(--prism-backdrop, none) center / cover no-repeat, var(--prism-backdrop-color, #151312);
+}
+html.immersive.holo-earth body::before {
+background: linear-gradient(rgb(12 10 9 / 0.5), rgb(12 10 9 / 0.62)), var(--prism-backdrop, none) center / cover no-repeat, url("data:image/webp;base64,UklGRrgAAABXRUJQVlA4IKwAAAAQBgCdASooABsAPtFUo00oJCMiNVQIAQAaCWcAyyw5X7vhbyF+pMSGq9m2YLhwU7Rfy+92VFZkGkAA/vrmfh4hnSz1ilWTm7g9bXs4UeTVsvoypN0zAo5SrJ+woGRf+yIX00lq1mRSducbh27meHVAgyMONCCViLXy3jNjh8kUDLg8hJ+5IK+KziOnO9Hc1jEo4vx3H51ymbcXm9AWJEOiXnTpwxzI0/lpDoAA") center / cover no-repeat, var(--prism-backdrop-color, #151312);
 }</style>
     <script>// The dark ground is the brand's primary mode: follow the system, remember a
 // choice. Runs before first paint so the page never flashes the other ground.
@@ -825,7 +895,7 @@ dialog#proof { padding: var(--space-4); }
       <span id="try-sep" hidden></span>
       <span id="dot" class="busy"></span>
     </div>
-    <prism-frame id="frame" name="Holo Search" address="holo-search" live="https://humuhumu33.github.io/holo-search/" repo="https://github.com/humuhumu33/holo-search" home="https://humuhumu33.github.io/holo-search/" purpose="Search and run self-verifying Prism apps by their address. Each app is checked against its address and its own acceptance vectors in your browser before it opens." card="https://humuhumu33.github.io/holo-search/og.png" identity="#identity-title" stars="1" data-shell="c459fb17885f5e627b4a390c4cc5c251f35e018548b2088177c05f3afb4463b8"><template shadowrootmode="open"><style>:host {
+    <prism-frame id="frame" name="Holo Search" address="holo-search" live="https://humuhumu33.github.io/holo-search/" repo="https://github.com/humuhumu33/holo-search" home="https://humuhumu33.github.io/holo-search/" purpose="Search and run self-verifying Prism apps by their address. Each app is checked against its address and its own acceptance vectors in your browser before it opens." card="https://humuhumu33.github.io/holo-search/og.png" identity="#identity-title" stars="1" data-shell="9301b45607ea225dbe546b57d403b887daca479ebbee2225508a312698ece8c8"><template shadowrootmode="open"><style>:host {
 --text-14: 0.875rem;
 --text-16: 1rem;
 --space-1: 0.25rem;
@@ -1010,6 +1080,10 @@ margin-inline-end: calc((1.5rem - var(--hit)) / 2 + 0.125rem);
 .address .sep { flex: none; width: var(--border-width); height: 1rem; margin-inline: 0.125rem; background: var(--border-strong); }
 #github[hidden] + .sep { display: none; }
 :host([fullscreen]) #fullscreen .expand, :host(:not([fullscreen])) #fullscreen .shrink { display: none; }
+#account.signed-in { color: var(--foreground); }
+#account.signed-in svg.person { fill: currentColor; }
+#account.busy svg.person { animation: account-breathe 1.2s var(--ease) infinite; }
+@keyframes account-breathe { 50% { opacity: 0.35; } }
 .address {
 position: relative;
 flex: 1 1 10rem;
@@ -1029,7 +1103,6 @@ cursor: text;
 transition: background var(--duration) var(--ease), border-color var(--duration) var(--ease);
 }
 .address:hover { background: color-mix(in oklab, var(--field), var(--foreground) 3%); }
-.address:has(.omnibox:focus), .inner.editing .address { background: var(--background); border-color: transparent; }
 .address::before {
 content: "";
 position: absolute;
@@ -1047,302 +1120,36 @@ padding: 1px;
 -webkit-mask-composite: xor;
 mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
 }
-.address:has(.omnibox:focus)::before, .inner.editing .address::before { opacity: 0.85; animation: spectrum-drift 24s linear infinite; }
 @media (min-resolution: 2dppx) { .address::before { padding: 1.5px; } }
 .field { position: relative; flex: 1; min-width: 0; align-self: stretch; display: flex; align-items: center; }
 .url { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .scheme { color: var(--muted-foreground); }
 .host { color: var(--foreground); font-weight: 500; }
-.address:has(.omnibox:focus) .url, .inner.editing .address .url { visibility: hidden; }
-.address .omnibox {
-position: absolute;
-inset: calc(-1 * var(--border-width)) 0;
-width: 100%;
-min-width: 0;
-min-height: 0;
-height: auto;
-margin: 0;
-padding: 0;
-border: 0;
-border-radius: 0;
-background: transparent;
-color: transparent;
-caret-color: var(--foreground);
-font-family: var(--font-sans);
-font-size: var(--text-14);
-font-weight: 500;
-outline: none;
-}
-.address .omnibox:focus, .inner.editing .address .omnibox { color: var(--foreground); }
-.address .omnibox::placeholder { color: var(--muted-foreground); font-weight: 400; }
-.address .omnibox::selection { background: var(--primary); color: var(--primary-foreground); }
-.omnibox-list {
-position: absolute;
-top: calc(100% + var(--space-2));
-left: 0;
-right: 0;
-z-index: 2;
-max-height: min(26rem, 70vh);
-margin: 0;
-padding: var(--space-1);
-overflow: auto;
-list-style: none;
-border: var(--border-width) solid var(--border);
-border-radius: var(--radius);
-background: var(--popover);
-color: var(--popover-foreground);
-box-shadow: var(--shadow-overlay);
-white-space: normal;
-cursor: default;
-}
-:host([dark]) .omnibox-list { box-shadow: none; border-color: var(--border-strong); }
-.opt {
-display: flex;
-align-items: center;
-gap: var(--space-3);
-min-height: 2.5rem;
-padding: 0 var(--space-3);
-border-radius: var(--radius-control);
-font-size: var(--text-14);
-white-space: nowrap;
-cursor: pointer;
-}
 @media (pointer: coarse) { .opt { min-height: var(--touch); } }
-.opt[aria-selected="true"] { background: var(--accent); }
-.opt-icon {
-flex: none;
-display: grid;
-place-items: center;
-width: 1.5rem;
-height: 1.5rem;
-color: var(--muted-foreground);
-}
-.opt-icon img { display: block; width: 1.5rem; height: 1.5rem; border-radius: 0.375rem; object-fit: cover; }
-.opt-icon svg { width: 1rem; height: 1rem; }
-.opt-tile {
-display: grid;
-place-items: center;
-width: 1.5rem;
-height: 1.5rem;
-border-radius: 0.375rem;
-background: oklch(0.6 0.11 var(--tile-hue, 250));
-color: #fff;
-font-family: var(--font-display);
-font-size: 0.75rem;
-font-weight: 600;
-line-height: 1;
-}
-:host([dark]) .opt-tile { background: oklch(0.52 0.1 var(--tile-hue, 250)); }
-.opt-title { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; color: var(--muted-foreground); }
-.opt-title b { font-weight: 600; color: var(--foreground); }
-.opt-sub { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; font-family: var(--font-mono); font-size: 0.8125rem; color: var(--muted-foreground); }
-.opt-fill { flex: 1 1 0; min-width: 0; }
-.opt-owner { flex: none; max-width: 9rem; overflow: hidden; text-overflow: ellipsis; font-size: 0.8125rem; color: var(--muted-foreground); }
-.opt-stars { flex: none; display: inline-flex; align-items: center; justify-content: flex-end; gap: 0.25rem; min-width: 3.25rem; font-size: 0.8125rem; font-weight: 500; font-variant-numeric: tabular-nums; color: var(--muted-foreground); }
-.opt-stars.unknown { visibility: hidden; }
-.opt-stars svg.star { width: 0.75rem; height: 0.75rem; fill: #e3b341; stroke: none; }
-.opt-stars svg.gh { width: 0.8125rem; height: 0.8125rem; margin-inline-end: 0.125rem; color: var(--muted-foreground); }
-.opt-note { padding: var(--space-2) var(--space-3); font-size: var(--text-14); color: var(--muted-foreground); }
-.trust svg, .trust-badge svg { width: 1.0625rem; height: 1.0625rem; stroke-width: 1.6; }
-.trust .body, .trust-badge .body { fill: currentColor; fill-opacity: 0.16; }
-.trust .ok, .trust .bad, .trust-badge .ok, .trust-badge .bad { display: none; }
-.trust.good .ok, .trust.bad .bad, .trust-badge.good .ok, .trust-badge.bad .bad { display: inline; }
-.trust.good .wait, .trust.bad .wait, .trust-badge.good .wait, .trust-badge.bad .wait { display: none; }
-#trust.good, #trust.good:hover, .trust-badge.good { color: var(--success); }
-#trust.bad, #trust.bad:hover, .trust-badge.bad { color: var(--destructive); }
-#trust.wait, .trust-badge.wait { color: var(--muted-foreground); }
-.trust-panel {
-position: fixed;
-inset: var(--trust-top, 3rem) auto auto var(--trust-left, 1rem);
-width: min(22rem, 100vw - 2rem);
-max-height: calc(100vh - var(--trust-top, 3rem) - 1rem);
-margin: 0;
-padding: var(--space-2);
-overflow: auto;
-border: var(--border-width) solid var(--border);
-border-radius: var(--radius);
-background: var(--popover);
-color: var(--popover-foreground);
-box-shadow: var(--shadow-overlay);
-font-size: var(--text-14);
-line-height: 1.45;
-transform-origin: top left;
-transition: opacity var(--duration) var(--ease), transform var(--duration) var(--ease), overlay var(--duration) allow-discrete, display var(--duration) allow-discrete;
-}
-.trust-panel:not(:popover-open) { opacity: 0; transform: translateY(-0.25rem) scale(0.98); }
 @starting-style {
 .trust-panel:popover-open { opacity: 0; transform: translateY(-0.25rem) scale(0.98); }
 }
-:host([dark]) .trust-panel { box-shadow: none; border-color: var(--border-strong); }
-.trust-panel p { margin: 0; }
-.trust-head {
-display: flex;
-align-items: center;
-gap: var(--space-3);
-padding: var(--space-2) var(--space-2) var(--space-3);
-border-bottom: var(--border-width) solid var(--border);
-}
-.trust-badge {
-flex: none;
-display: grid;
-place-items: center;
-width: 2.25rem;
-height: 2.25rem;
-border-radius: 50%;
-background: color-mix(in oklab, currentColor 12%, transparent);
-}
-.trust-badge svg { width: 1.25rem; height: 1.25rem; }
-.trust-words { min-width: 0; }
-.trust-title { font-family: var(--font-display); font-size: var(--text-16); font-weight: 600; letter-spacing: var(--tracking-display); }
-.trust-sub { color: var(--muted-foreground); }
 .checks { margin: 0; padding: var(--space-2) 0; list-style: none; }
-.check { display: flex; gap: var(--space-3); padding: var(--space-2); }
-.check .mark { flex: none; display: grid; place-items: center; width: 1.25rem; height: 1.3125rem; }
-.check .mark svg { width: 1rem; height: 1rem; fill: none; stroke: currentColor; stroke-width: 1.75; }
-.check .ok, .check .bad { display: none; }
-.check.good .ok, .check.bad .bad { display: inline; }
-.check.good .wait, .check.bad .wait { display: none; }
-.check.good .mark { color: var(--success); }
-.check.bad .mark { color: var(--destructive); }
-.check.wait .mark { color: var(--muted-foreground); }
-.check-words { min-width: 0; display: grid; gap: 0.125rem; }
-.check-title { font-weight: 600; }
-.check-detail { color: var(--muted-foreground); overflow-wrap: anywhere; }
-#check-proved .check-detail { color: var(--foreground); }
-.check-meta { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 var(--space-2); color: var(--muted-foreground); font-size: 0.8125rem; }
-.check-meta code { font-family: var(--font-mono); font-size: 0.8125rem; color: var(--foreground); }
-.trust-panel .text {
-min-height: 0;
-padding: 0;
-border: 0;
-background: none;
-color: var(--foreground);
-font: inherit;
-font-weight: 500;
-text-decoration: underline;
-text-decoration-color: var(--border-strong);
-text-underline-offset: 0.2em;
-cursor: pointer;
-}
-.trust-panel .text:hover { background: none; text-decoration-color: currentColor; }
-.trust-details {
-display: flex;
-align-items: center;
-justify-content: space-between;
-min-height: 2.5rem;
-padding: 0 var(--space-2);
-border-top: var(--border-width) solid var(--border);
-border-radius: 0 0 calc(var(--radius) - var(--space-2)) calc(var(--radius) - var(--space-2));
-color: var(--foreground);
-font-weight: 500;
-text-decoration: none;
-}
-.trust-details:hover { background: var(--accent); }
-.trust-details svg { width: 1rem; height: 1rem; color: var(--muted-foreground); }
 @media (pointer: coarse) {
 .trust-panel button.text { min-width: var(--touch); min-height: var(--touch); margin-block: calc((1lh - var(--touch)) / 2); display: inline-flex; align-items: center; justify-content: center; }
 .trust-details { min-height: var(--touch); }
 }
 #share .done, #share.copied .share { display: none; }
 #share.copied .done { display: inline; }
-.share-panel {
-position: fixed;
-inset: var(--share-top, 4rem) var(--share-right, 1rem) auto auto;
-width: min(23rem, 100vw - 2rem);
-max-height: calc(100vh - var(--share-top, 4rem) - 1rem);
-margin: 0;
-padding: var(--space-4);
-overflow: auto;
-border: var(--border-width) solid var(--border);
-border-radius: var(--radius);
-background: var(--popover);
-color: var(--popover-foreground);
-box-shadow: var(--shadow-overlay);
-transform-origin: top right;
-transition: opacity var(--duration) var(--ease), transform var(--duration) var(--ease), overlay var(--duration) allow-discrete, display var(--duration) allow-discrete;
-}
-.share-panel:not(:popover-open) { opacity: 0; transform: translateY(-0.25rem) scale(0.98); }
 @starting-style {
 .share-panel:popover-open { opacity: 0; transform: translateY(-0.25rem) scale(0.98); }
 }
-:host([dark]) .share-panel { box-shadow: none; border-color: var(--border-strong); }
-.share-title {
-margin: 0 0 var(--space-3);
-font-family: var(--font-display);
-font-weight: 600;
-font-size: var(--text-16);
-letter-spacing: var(--tracking-display);
-overflow: hidden;
-text-overflow: ellipsis;
-white-space: nowrap;
-}
-.share-image {
-aspect-ratio: 1200 / 630;
-margin: 0 0 var(--space-3);
-border: var(--border-width) solid var(--border);
-border-radius: var(--radius-control);
-overflow: hidden;
-background: var(--muted);
-}
-.share-image img { display: block; width: 100%; height: 100%; }
-.share-link {
-display: flex;
-align-items: center;
-gap: var(--space-2);
-margin: 0 0 var(--space-4);
-padding: var(--space-1) var(--space-1) var(--space-1) var(--space-3);
-border: var(--border-width) solid var(--input);
-border-radius: var(--radius-control);
-background: var(--background);
-}
-.share-url { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--font-mono); font-size: var(--text-14); color: var(--muted-foreground); }
-#share-copy { flex: none; display: inline-flex; align-items: center; gap: var(--space-2); padding: 0 var(--space-3); }
-#share-copy svg { width: 1rem; height: 1rem; }
-#share-copy .done, #share-copy.copied .link { display: none; }
-#share-copy.copied .done { display: inline; }
-.share-targets {
-display: grid;
-grid-template-columns: repeat(auto-fit, minmax(3.5rem, 1fr));
-gap: var(--space-2);
-margin: 0;
-padding: 0;
-list-style: none;
-}
-.share-target {
-display: flex;
-flex-direction: column;
-align-items: center;
-gap: var(--space-1);
-width: 100%;
-min-height: auto;
-padding: var(--space-1) 0;
-border: 0;
-border-radius: var(--radius-control);
-background: transparent;
-color: var(--muted-foreground);
-font-size: var(--text-14);
-font-weight: 500;
-text-decoration: none;
-cursor: pointer;
-}
-.share-target:hover { background: transparent; color: var(--foreground); }
-.share-glyph {
-display: grid;
-place-items: center;
-width: var(--touch);
-height: var(--touch);
-border: var(--border-width) solid var(--border);
-border-radius: 50%;
-background: var(--secondary);
-color: var(--foreground);
-transition: background var(--duration) var(--ease), transform var(--duration) var(--ease);
-}
-.share-target:hover .share-glyph { background: var(--accent); }
-.share-target:active .share-glyph { transform: scale(0.94); }
 #theme { display: inline-grid; place-items: center; }
 #theme svg { grid-area: 1 / 1; }
-#theme .moon { color: light-dark(currentColor, transparent); }
-#theme .sun { color: light-dark(transparent, currentColor); }
+#theme .sun { color: light-dark(currentColor, transparent); }
+#theme .moon { color: light-dark(transparent, currentColor); }
+#theme .photo, :host([immersive]) #theme .moon { color: transparent; }
+:host([immersive]) #theme .photo { color: currentColor; }
+@starting-style {
+.theme-panel:popover-open { opacity: 0; transform: translateY(-0.25rem) scale(0.98); }
+}
+@keyframes breathe { from { opacity: 0.45; } to { opacity: 0.9; } }
+@keyframes spin { to { transform: rotate(1turn); } }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 @media (max-width: 599px) {
 :host { --window-radius: 0.625rem; }
@@ -1371,14 +1178,14 @@ button:not(.icon), .ghost:not(.icon) { min-height: var(--touch); }
 .address .omnibox { inset: calc((var(--bar-control) - var(--touch)) / 2 - var(--border-width)) 0; }
 }
 @media (forced-colors: active) {
-.bar, .chip, .address, .share-panel, .share-glyph, button { border-color: CanvasText; }
+.bar, .chip, .address, .share-panel, .account-panel, .share-glyph, button { border-color: CanvasText; }
 .address::before { display: none; }
 .address:has(.omnibox:focus) { border-color: Highlight; }
 .canvas { box-shadow: inset 0 0 0 1px CanvasText, 0 0 0 100vmax Canvas; }
 }
 @media (prefers-reduced-motion: reduce) {
 *, *::before, *::after { transition: none !important; }
-.address::before { animation: none !important; }
+.address::before, .photo-pick.blank, .find.busy .find-busy { animation: none !important; }
 }</style>
   <div class="canvas" aria-hidden="true"></div>
   <div class="bar"><div class="inner">
@@ -1399,60 +1206,11 @@ button:not(.icon), .ghost:not(.icon) { min-height: var(--touch); }
     <div class="end">
     <slot name="status"></slot>
     <span id="bar-status" class="sr" aria-live="polite"></span>
-    <button id="theme" class="ghost icon" type="button" aria-label="Switch theme" title="Switch theme"><svg class="moon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z" /></svg><svg class="sun" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></svg></button>
+    <button id="theme" class="ghost icon" type="button" popovertarget="theme-panel" aria-label="Theme" title="Theme"><svg class="moon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z" /></svg><svg class="sun" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></svg><svg class="photo" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><rect x="3" y="4.5" width="18" height="15" rx="2.5" /><circle cx="9" cy="10" r="1.75" /><path d="m3.5 17 5-4.5 3.5 3 3-2.5 5.5 4.5" /></svg></button>
     <button id="fullscreen" class="ghost icon" type="button" aria-label="Enter full screen" title="Full screen"><svg class="expand" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M4 9V5.5A1.5 1.5 0 0 1 5.5 4H9M15 4h3.5A1.5 1.5 0 0 1 20 5.5V9M20 15v3.5a1.5 1.5 0 0 1-1.5 1.5H15M9 20H5.5A1.5 1.5 0 0 1 4 18.5V15" /></svg><svg class="shrink" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M9 4v3.5A1.5 1.5 0 0 1 7.5 9H4M20 9h-3.5A1.5 1.5 0 0 1 15 7.5V4M15 20v-3.5a1.5 1.5 0 0 1 1.5-1.5H20M4 15h3.5A1.5 1.5 0 0 1 9 16.5V20" /></svg></button>
+    <button id="account" class="ghost icon" type="button" popovertarget="account-panel" aria-label="Sign in" title="Sign in"><svg class="person" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><circle cx="12" cy="8" r="3.5" /><path d="M5 20c0-3.6 3.1-6 7-6s7 2.4 7 6" /></svg></button>
     </div>
   </div></div>
-  <div id="trust-panel" class="trust-panel" popover aria-labelledby="trust-title">
-    <div class="trust-head">
-      <span id="trust-badge" class="trust-badge wait"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path class="body" d="M12 3 4 6v6c0 4.6 3.4 8.4 8 9 4.6-.6 8-4.4 8-9V6z" /><path class="wait" d="M8.5 12h.01M12 12h.01M15.5 12h.01" /><path class="ok" d="m8.5 12 2.5 2.5 4.5-5" /><path class="bad" d="M12 8v4.5M12 16h.01" /></svg></span>
-      <div class="trust-words">
-        <p id="trust-title" class="trust-title">Verifying this app</p>
-        <p id="trust-sub" class="trust-sub">Checking it in your browser</p>
-      </div>
-    </div>
-    <ol class="checks">
-      <li id="check-authentic" class="check wait">
-        <span class="mark"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false"><circle class="ring" cx="12" cy="12" r="9" /><path class="wait" d="M8 12h.01M12 12h.01M16 12h.01" /><path class="ok" d="m8 12.5 2.8 2.8L16.5 9.5" /><path class="bad" d="M12 7.5v5M12 16.2h.01" /></svg></span>
-        <div class="check-words">
-          <p class="check-title">Authentic</p>
-          <p id="authentic-detail" class="check-detail">Checking every byte against its fingerprint</p>
-          <p id="authentic-print" class="check-meta" hidden><code id="trust-print"></code><button id="trust-copy" class="text" type="button">Copy</button></p>
-        </div>
-      </li>
-      <li id="check-proved" class="check wait" hidden>
-        <span class="mark"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false"><circle class="ring" cx="12" cy="12" r="9" /><path class="wait" d="M8 12h.01M12 12h.01M16 12h.01" /><path class="ok" d="m8 12.5 2.8 2.8L16.5 9.5" /><path class="bad" d="M12 7.5v5M12 16.2h.01" /></svg></span>
-        <div class="check-words">
-          <p class="check-title">Formally proved</p>
-          <p id="proved-detail" class="check-detail"></p>
-          <p class="check-meta"><span>Proved in Lean when this app was built</span><a id="trust-proof" class="text" target="_blank" rel="noopener noreferrer" hidden>Attestation</a></p>
-        </div>
-      </li>
-      <li id="check-replayed" class="check wait" hidden>
-        <span class="mark"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false"><circle class="ring" cx="12" cy="12" r="9" /><path class="wait" d="M8 12h.01M12 12h.01M16 12h.01" /><path class="ok" d="m8 12.5 2.8 2.8L16.5 9.5" /><path class="bad" d="M12 7.5v5M12 16.2h.01" /></svg></span>
-        <div class="check-words">
-          <p class="check-title">Behaves as proved</p>
-          <p id="replayed-detail" class="check-detail">Replaying its examples</p>
-        </div>
-      </li>
-    </ol>
-    <a id="trust-details" class="trust-details" href="#identity-title">Full details<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false"><path d="M5 12h14M13 6l6 6-6 6" /></svg></a>
-  </div>
-  <div id="share-panel" class="share-panel" popover aria-labelledby="share-title">
-    <p id="share-title" class="share-title">Share Holo Search</p>
-    <div id="share-image" class="share-image"></div>
-    <div class="share-link">
-      <code class="share-url">humuhumu33.github.io/holo-search</code>
-      <button id="share-copy" class="primary" type="button" autofocus><svg class="link" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M10 13.5a4.5 4.5 0 0 0 6.4.4l2.8-2.8a4.5 4.5 0 0 0-6.4-6.4l-1.3 1.3" /><path d="M14 10.5a4.5 4.5 0 0 0-6.4-.4l-2.8 2.8a4.5 4.5 0 0 0 6.4 6.4l1.3-1.3" /></svg><svg class="done" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="m5 12.5 4.5 4.5L19 7.5" /></svg><span id="share-copy-label">Copy link</span></button>
-    </div>
-    <ul class="share-targets">
-      <li><a class="share-target" href="https://x.com/intent/post?text=Holo+Search%3A+Search+and+run+self-verifying+Prism+apps+by+their+address.&amp;url=https%3A%2F%2Fhumuhumu33.github.io%2Fholo-search%2F" target="_blank" rel="noopener noreferrer"><span class="share-glyph"><svg class="fill" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M17.8 3h3.1l-6.8 7.7L22 21h-6.2l-4.9-6.3L5.3 21H2.2l7.2-8.3L1.8 3h6.4l4.4 5.8zm-1.1 16.2h1.7L7.4 4.7H5.6z" /></svg></span>X</a></li>
-      <li><a class="share-target" href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fhumuhumu33.github.io%2Fholo-search%2F" target="_blank" rel="noopener noreferrer"><span class="share-glyph"><svg class="fill" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46zM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13M7.12 20.45H3.56V9h3.56zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.73V1.73C24 .77 23.2 0 22.22 0" /></svg></span>LinkedIn</a></li>
-      <li><a class="share-target" href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fhumuhumu33.github.io%2Fholo-search%2F" target="_blank" rel="noopener noreferrer"><span class="share-glyph"><svg class="fill" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M24 12.07C24 5.41 18.63 0 12 0S0 5.4 0 12.07C0 18.1 4.39 23.1 10.13 24v-8.44H7.08v-3.49h3.04V9.41c0-3.02 1.8-4.7 4.54-4.7 1.31 0 2.68.24 2.68.24v2.97h-1.5c-1.5 0-1.96.93-1.96 1.89v2.26h3.32l-.53 3.5h-2.8V24C19.62 23.1 24 18.1 24 12.07" /></svg></span>Facebook</a></li>
-      <li><a class="share-target" href="mailto:?subject=Holo%20Search&amp;body=Holo%20Search%3A%20Search%20and%20run%20self-verifying%20Prism%20apps%20by%20their%20address.%0A%0Ahttps%3A%2F%2Fhumuhumu33.github.io%2Fholo-search%2F"><span class="share-glyph"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="m3.5 6.5 8.5 6.5 8.5-6.5" /></svg></span>Email</a></li>
-      <li id="share-more-item" hidden><button id="share-more" class="share-target" type="button"><span class="share-glyph"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><circle cx="5" cy="12" r="1" /><circle cx="12" cy="12" r="1" /><circle cx="19" cy="12" r="1" /></svg></span>More</button></li>
-    </ul>
-  </div>
 </template>
       <a class="frame-fallback" href="https://humuhumu33.github.io/holo-search/"><span class="dot" aria-hidden="true"></span><span class="scheme">holo://</span>holo-search</a>
       <span slot="status" id="update" class="chip chip-warn" hidden><button id="reload" class="bare" type="button">Update available. Reload</button></span>
@@ -1868,6 +1626,15 @@ function watch() {
   observer.observe($("app-page"), { attributes: true, attributeFilter: ["hidden"] });
   readStatus();
   paint();
+}
+
+// The photo site/backdrop.js painted before the frame arrived becomes the
+// frame's own: it does not fetch it again, and a visitor who has not picked a
+// photo keeps Earth at night as the frame's choice instead of its default.
+const painted = document.documentElement.dataset.backdrop;
+if (painted) {
+  element.backdrop = painted;
+  element.chosen ??= { id: painted };
 }
 
 watch();

@@ -401,3 +401,25 @@ dialog#proof .close { float: right; margin: calc(-1 * var(--space-2)) calc(-1 * 
 @media (pointer: coarse) {
   #canvas { --control: var(--touch); }
 }
+
+/* The immersive ground, from first paint. site/backdrop.js sets the classes
+   and the photo before the frame arrives; the frame's own sheet repeats these
+   rules once it loads. Under Earth at night lies a 40 px copy of it, inline,
+   so the first frame already shows the photo while the full one loads. */
+html.immersive { background: var(--prism-backdrop-color, #151312); }
+html.immersive body { background: transparent; }
+html.immersive body::before {
+  content: "";
+  position: fixed;
+  top: var(--prism-window-top, 0px);
+  right: var(--prism-window-right, 0px);
+  bottom: var(--prism-window-bottom, 0px);
+  left: var(--prism-window-left, 0px);
+  border-radius: var(--prism-window-radius, 0px);
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(rgb(12 10 9 / 0.5), rgb(12 10 9 / 0.62)), var(--prism-backdrop, none) center / cover no-repeat, var(--prism-backdrop-color, #151312);
+}
+html.immersive.holo-earth body::before {
+  background: linear-gradient(rgb(12 10 9 / 0.5), rgb(12 10 9 / 0.62)), var(--prism-backdrop, none) center / cover no-repeat, url("data:image/webp;base64,UklGRrgAAABXRUJQVlA4IKwAAAAQBgCdASooABsAPtFUo00oJCMiNVQIAQAaCWcAyyw5X7vhbyF+pMSGq9m2YLhwU7Rfy+92VFZkGkAA/vrmfh4hnSz1ilWTm7g9bXs4UeTVsvoypN0zAo5SrJ+woGRf+yIX00lq1mRSducbh27meHVAgyMONCCViLXy3jNjh8kUDLg8hJ+5IK+KziOnO9Hc1jEo4vx3H51ymbcXm9AWJEOiXnTpwxzI0/lpDoAA") center / cover no-repeat, var(--prism-backdrop-color, #151312);
+}
