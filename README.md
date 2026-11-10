@@ -2,7 +2,7 @@
 
 Search and run self-verifying Prism apps by their address.
 
-**Live:** https://humuhumu33.github.io/holo-search/
+**Live:** https://uor-foundation.github.io/holo-search/
 
 Type an app's name, or paste its address: a `sha256` digest (or an 8+ digit
 prefix), a `blake3:` holo fingerprint, an IPFS CID, or a shared link. Holo

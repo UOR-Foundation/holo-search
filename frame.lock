@@ -2,17 +2,17 @@
   "spec": "prism/frame-lock/1",
   "source": {
     "repository": "UOR-Foundation/template",
-    "commit": "16c63c63f9e7ee033150170a802ccd46983fa885",
-    "raw": "https://raw.githubusercontent.com/UOR-Foundation/template/16c63c63f9e7ee033150170a802ccd46983fa885/"
+    "commit": "05855f42dd1186aee9f4907985920514907b255e",
+    "raw": "https://raw.githubusercontent.com/UOR-Foundation/template/05855f42dd1186aee9f4907985920514907b255e/"
   },
   "files": [
     {
       "path": "bootstrap/frame-sync.mjs",
-      "sha256": "0c72dce47beb0faea9c24b535e3ec6d6013a9fc8de21f92b61c8e00ec277280a"
+      "sha256": "c7df2d026b14ec0783a068a3fcb87a1eaabf2ea7f55ac6b61cb96b96e21e7957"
     },
     {
       "path": "bootstrap/icons.py",
-      "sha256": "d2ecf0fa7a8e6b0e6f5c6fd32aebf41e6e3c6aeb8f16fc20492bd1b7409626df"
+      "sha256": "e3cff5530d752ee1563df8622e4b9ff3453f2d62c850d00fb5a5f1467e5e0b4b"
     },
     {
       "path": "bootstrap/og.py",
@@ -20,7 +20,7 @@
     },
     {
       "path": "bootstrap/page.mjs",
-      "sha256": "574241085003b0fa4c213ef9582254c8564285ae301b90aa531a1b54c32ee104"
+      "sha256": "294f498e4a3aaa17afdcc55a30f3bff2f2008e85777a44b33222ab6697732930"
     },
     {
       "path": "bootstrap/precache.mjs",
@@ -32,7 +32,7 @@
     },
     {
       "path": "bootstrap/screens.mjs",
-      "sha256": "0aaef44f114dfbec5f26c4de17e580f8b3c84e9ac231546d9a8d1fd757b300e4"
+      "sha256": "c9787ebf5ad8e8b649034ec3e43f8812ba51777ba59eb11f1f51ca084a395b67"
     },
     {
       "path": "lighthouserc.json",
@@ -40,7 +40,7 @@
     },
     {
       "path": "site/app.mjs",
-      "sha256": "59f40ba9bd479cdb451ebd3b2aeda0bbb094d80d5c26f52cd5286aedf6ce075e"
+      "sha256": "7a54aecef87c300cbff8d6d578e146d7f508dbe5ea73e5775edcd4cd36a3363a"
     },
     {
       "path": "site/guest-worker.mjs",
@@ -48,11 +48,19 @@
     },
     {
       "path": "site/page.template.html",
-      "sha256": "5c04f4d913d27a15097b1ef90fd099384ce2fdc6f94550f2903c69a505bc6b89"
+      "sha256": "d7df0bc4d5190ca38ee768bdbd54cbc665ede811608de846068c8a92bd02c14d"
     },
     {
       "path": "site/prism-page.css",
-      "sha256": "1656edaf70a860245c1bc204bc1ded57b91e12b375dc22422397df7603f046b7"
+      "sha256": "e74dc6dbe7f1394fdf1f7c663578ea4fbb4836f301b87f82d57a7c5dc6066e1c"
+    },
+    {
+      "path": "site/spec.css",
+      "sha256": "a74d0a4e5329f9ab60e5e8ef5f0964ac0af5d1c17912539ae1880fb3862dd383"
+    },
+    {
+      "path": "site/spec.mjs",
+      "sha256": "9f3fa8197085693da6423a27ea228f9180523702c479f19e64fdf27c1d1054bf"
     },
     {
       "path": "site/sw.js",
@@ -60,7 +68,7 @@
     },
     {
       "path": "site/theme.js",
-      "sha256": "1eec883e864bbd39bcb1b910a91fb828c7aec8ea93e22092a7cbd2f3b04086e5"
+      "sha256": "dedc458660aa62df983ab84dbf370ac365578289699aa6cf8f1476c97db2ce92"
     }
   ]
 }

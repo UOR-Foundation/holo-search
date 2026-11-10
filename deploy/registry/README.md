@@ -61,7 +61,7 @@ node test/issuer.mjs 127.0.0.1:5002 &
 GATEWAY_LISTEN=127.0.0.1:5011 KAPPA_URL=http://127.0.0.1:5000 GATEWAY_LOG=./data/registrations.jsonl \
   OIDC_ISSUER=http://127.0.0.1:5002 OIDC_JWKS_URL=http://127.0.0.1:5002/.well-known/jwks \
   node gateway/gateway.mjs &
-DATA=./data KAPPA_URL=http://127.0.0.1:5000 DISCOVER_OWNERS=humuhumu33 node indexer/indexer.mjs --once
+DATA=./data KAPPA_URL=http://127.0.0.1:5000 DISCOVER_OWNERS=UOR-Foundation node indexer/indexer.mjs --once
 # In an app's checkout, as that app:
 PRISM_REGISTRY=127.0.0.1:5011 PRISM_REGISTRY_TOKEN=$(node test/issuer.mjs 127.0.0.1:5002 --mint owner/name) \
   node bootstrap/register.mjs site

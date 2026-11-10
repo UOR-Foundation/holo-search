@@ -113,7 +113,7 @@ if (!index.some((entry) => entry.sha256 === model)) fail(`registry/index.json do
 const escape = (text) =>
   String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const live = new URL(meta.live);
-const holoSearch = new URL("https://humuhumu33.github.io/holo-search/");
+const holoSearch = new URL("https://uor-foundation.github.io/holo-search/");
 // The canonical frame: the template's Pages site publishes it on every push
 // to main. HOLO_FRAME_HOST points a local build at a frame published with
 // frame/publish.mjs, for a test; --check rejects a page built that way.
@@ -127,6 +127,10 @@ const frameFill = {
   HOLO_SEARCH: escape(holoSearch.href),
   PURPOSE: escape(meta.purpose),
   OG_IMAGE: escape(new URL("og.png", live).href),
+  // Prism accounts: the sign-in page the frame's account panel shows, as bootstrap/page.mjs fills it.
+  ACCOUNTS: escape(new URL(meta.accounts ?? "https://id.uor.foundation/").href),
+  // The promise headline, as bootstrap/page.mjs makes it: app.json's promise, else the first sentence of the purpose.
+  PROMISE_HEADLINE: escape(meta.promise?.headline ?? meta.tagline ?? (String(meta.purpose).split(/(?<=.)s+/)[0] || meta.name)),
 };
 const fill = (text, values) => {
   for (const [key, value] of Object.entries(values)) text = text.split(`{{${key}}}`).join(value);
